@@ -65,4 +65,4 @@ if __name__ == "__main__":
     x, y = symbols("x y")
     P = x+ t*x**p + y**p 
     print(f"starting with {P}")
-    print(generate_iteration(P)[0])
+    print(generate_iteration(P))
