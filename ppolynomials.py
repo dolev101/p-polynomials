@@ -1,4 +1,4 @@
-from sympy import poly, symbols, Poly
+from sympy import poly, symbols, Poly, collect
 from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
@@ -47,22 +47,25 @@ def generate_iteration(polynomial: Poly):
     return(polynomial_system)
 
 def get_c_ijk(polynomial, i, j, k):
-    return 1
+    parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
+    cij = parts.get(symbols(f"x_{i}") ** (p ** k), 0)
+    return collect(cij, t, evaluate=False).get(t ** j, 0) # add root of p^{....}
 
-def create_polynomial(i, N, Ni, l, polynomial):
-    polynomial = 0
+def create_polynomial(i, N, Ni, l, old_polynomial):
+    polynomial = 0*t
     for k in range(Ni + 1):
         for j in range(p**(k+N-Ni)):
-            for r in range(p**N):
-                if (r+j-1-(l+1)*p**k) % p**(k+N-Ni) == 0:
-                    c_ijk = get_c_ijk(polynomial, i, j, k)
-                    polynomial += c_ijk*(symbols(f"lam_{r}")**(p**(Ni-k)))*t**((r+j-1-(l+1)*p**k)/p**(k+N-Ni))
+            c_ijk = get_c_ijk(old_polynomial, i, j, k)
+            if c_ijk != 0:
+                for r in range(p**N):
+                    if (r+j+1-(l+1)*p**k) % (p**(k+N-Ni)) == 0:
+                        polynomial += c_ijk*(symbols(f"lam_{r}")**(p**(Ni-k)))*t**((r+j-1-(l+1)*p**k)/p**(k+N-Ni))
     return polynomial
 
 
 if __name__ == "__main__":
     P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")
-    x, y = symbols("x y")
+    x, y = symbols("x_0 x_1")
     P = x+ t*x**p + y**p 
     print(f"starting with {P}")
     print(generate_iteration(P))
