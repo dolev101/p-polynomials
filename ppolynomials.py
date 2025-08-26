@@ -27,5 +27,6 @@ def generate_ppolynomial(n, len):
     print(A)
     return sum([a*symbols(f"x_{i}")**(p**n) for i, a in enumerate(A)])
 
+
 if __name__ == "__main__":
     print(generate_ppolynomial(N, LEN))
