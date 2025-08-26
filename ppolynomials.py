@@ -24,6 +24,9 @@ def get_random_A_subset(basis: List, n, len):
 )
 
 def generate_ppolynomial(n, len):
+    """
+    generate basic reduced ppolynomial, notice that there isn't linear part for smoothness 
+    """
     A = get_random_A_subset(BASIS_Fpt, n, len)
     A = sorted(A, key=lambda p: Poly(p, t).degree())
 
@@ -37,8 +40,7 @@ def generate_iteration(polynomial: Poly):
     P = Poly(polynomial, *sorted(polynomial.free_symbols, key=lambda s: s.name))
     max_each_index = tuple(map(max, zip(*P.monoms())))[1:]
     N = max(max_each_index)
-    print(polynomial.free_symbols)
-    for i in range(len(polynomial.free_symbols)):
+    for i in range(len(max_each_index)): # number of variables
         for l in range(p**(N-max_each_index[i])):
             polynomial_system.append(create_polynomial(i,l))
 
