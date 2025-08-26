@@ -1,4 +1,4 @@
-from sympy import poly, symbols
+from sympy import poly, symbols, Poly
 from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
@@ -24,7 +24,8 @@ def get_random_A_subset(basis, n, len):
 
 def generate_ppolynomial(n, len):
     A = get_random_A_subset(BASIS_Fpt, n, len)
-    print(A)
+    A = sorted(A, key=lambda p: Poly(p, t).degree())
+
     return sum([a*symbols(f"x_{i}")**(p**n) for i, a in enumerate(A)])
 
 
