@@ -39,9 +39,9 @@ def generate_iteration(polynomial: Poly):
     polynomial_system = []
     P = Poly(polynomial, *sorted(polynomial.free_symbols, key=lambda s: s.name))
     max_each_index = tuple(map(max, zip(*P.monoms())))[1:]
-    N = max(max_each_index)
+    N = max(max_each_index)//p
     for i in range(len(max_each_index)): # number of variables
-        Ni = max_each_index[i]
+        Ni = max_each_index[i]//p
         for l in range(p**(N-Ni)):
             polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
     return(polynomial_system)
@@ -59,8 +59,12 @@ def create_polynomial(i, N, Ni, l, old_polynomial):
             if c_ijk != 0:
                 for r in range(p**N):
                     if (r+j+1-(l+1)*p**k) % (p**(k+N-Ni)) == 0:
-                        polynomial += c_ijk*(symbols(f"lam_{r}")**(p**(Ni-k)))*t**((r+j-1-(l+1)*p**k)/p**(k+N-Ni))
+                        polynomial += c_ijk*(symbols(f"lam_{r}")**(p**(Ni-k)))*t**((r+j+1-(l+1)*p**k)//(p**(k+N-Ni)))
     return polynomial
+
+def reduce_system_of_equations(system):
+    for polynomial in system:
+        if polynomial
 
 
 if __name__ == "__main__":
