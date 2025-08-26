@@ -3,6 +3,7 @@ from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
 from typing import List
+from chatgpt_util import eliminate_single_variable_polys
 seed(1)
 t = symbols('t')
 
@@ -44,7 +45,7 @@ def generate_iteration(polynomial: Poly):
         Ni = max_each_index[i]//p
         for l in range(p**(N-Ni)):
             polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
-    return(polynomial_system)
+    return eliminate_single_variable_polys(polynomial_system)[0][0]
 
 def get_c_ijk(polynomial, i, j, k):
     parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
@@ -64,7 +65,7 @@ def create_polynomial(i, N, Ni, l, old_polynomial):
 
 def reduce_system_of_equations(system):
     for polynomial in system:
-        if polynomial
+        pass 
 
 
 if __name__ == "__main__":
