@@ -63,10 +63,6 @@ def create_polynomial(i, N, Ni, l, old_polynomial):
                         polynomial += c_ijk*(symbols(f"lam_{r}")**(p**(Ni-k)))*t**((r+j+1-(l+1)*p**k)//(p**(k+N-Ni)))
     return polynomial
 
-def reduce_system_of_equations(system):
-    for polynomial in system:
-        pass 
-
 
 if __name__ == "__main__":
     P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")
