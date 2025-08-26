@@ -41,15 +41,28 @@ def generate_iteration(polynomial: Poly):
     max_each_index = tuple(map(max, zip(*P.monoms())))[1:]
     N = max(max_each_index)
     for i in range(len(max_each_index)): # number of variables
-        for l in range(p**(N-max_each_index[i])):
-            polynomial_system.append(create_polynomial(i,l))
+        Ni = max_each_index[i]
+        for l in range(p**(N-Ni)):
+            polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
+    return(polynomial_system)
 
+def get_c_ijk(polynomial, i, j, k):
+    return 1
 
-def create_polynomial(i, l):
-    pass
+def create_polynomial(i, N, Ni, l, polynomial):
+    polynomial = 0
+    for k in range(Ni + 1):
+        for j in range(p**(k+N-Ni)):
+            for r in range(p**N):
+                if (r+j-1-(l+1)*p**k) % p**(k+N-Ni) == 0:
+                    c_ijk = get_c_ijk(polynomial, i, j, k)
+                    polynomial += c_ijk*(symbols(f"lam_{r}")**(p**(Ni-k)))*t**((r+j-1-(l+1)*p**k)/p**(k+N-Ni))
+    return polynomial
 
 
 if __name__ == "__main__":
     P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")
+    x, y = symbols("x y")
+    P = x+ t*x**p + y**p 
     print(f"starting with {P}")
-    generate_iteration(P)
+    print(generate_iteration(P)[0])
