@@ -3,9 +3,9 @@ from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
 from typing import List
-from chatgpt_util import eliminate_single_variable_polys
+from chatgpt_util import eliminate_single_variable_polys, rename_vars_list_strict
 import math
-seed(11)
+# seed(11)
 t = symbols('t')
 
 p = 3
@@ -46,14 +46,14 @@ def generate_iteration(polynomial):
         Ni = int(math.log(int(max_each_index[i]), p))
         for l in range(p**(N-Ni)):
             polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
-    print(f"{polynomial_system=}")
     eliminated = eliminate_single_variable_polys(polynomial_system)[0]
-    return [x for x in eliminated if x!=0]
+    removed_0 =[x for x in eliminated if x!=0]
+    renamed, _ = rename_vars_list_strict(removed_0, exclude={t})
+    return renamed
 
 def get_c_ijk(polynomial, i, j, k):
     parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
     cij = parts.get(symbols(f"x_{i}") ** (p ** k), 0)
-    print(f"{cij=}")
     if collect(cij, t, evaluate=False).get(t ** j, 0) not in [0,1]:
         print("problemo!")
     return collect(cij, t, evaluate=False).get(t ** j, 0) # add root of p^{....}
@@ -85,18 +85,17 @@ def dimension_formula(polynomial):
 def iterate_twice_check_for_non_stabilizing(P):
     first_dim = dimension_formula(P)
     first_iter = generate_iteration(P)
-    print(first_iter)
     if len(first_iter) != 1:
         print("problemo!!")
     else:
-        second_iter = generate_iteration(first_iter[0]) # TODO: not always one equation 
+        second_iter = generate_iteration(first_iter[0]) # TODO: not always one equation
         if len(second_iter) == 1:
-            if first_dim != dimension_formula(second_iter[0]):
-                print("found it!")
-                print(first_dim, dimension_formula(second_iter[0]))
-                print(first_iter)
-                print(second_iter[0])
-                print(generate_iteration(second_iter[0]))
+            second_iter = second_iter[0]
+            print(f"{first_iter=}")
+            print(f"{second_iter=}")
+            print(generate_iteration(second_iter))
+        else:
+            print("problemo!!!")
 
 if __name__ == "__main__":
     P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")
