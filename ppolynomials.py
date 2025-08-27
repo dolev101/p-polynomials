@@ -6,13 +6,13 @@ from typing import List
 from chatgpt_util import eliminate_single_variable_polys, rename_vars_list_strict, num_vars, nth_roots_mod_prime
 import math
 
-seed(1)
+# seed(1)
 t = symbols('t')
 
-p = 5
+p = 3
 Fp = GF(p)
-POWER = 1
-NUM_OF_VAR = 4
+POWER = 2
+NUM_OF_VAR = 3
 
 BASIS_Fpt = [t**i for i in range(p)]
 
@@ -84,8 +84,10 @@ def dimension_formula(polynomial):
 def iterate_twice_check_for_non_stabilizing(P):
     first_dim = dimension_formula(P)
     first_iter = generate_iteration(P)
+    
     if len(first_iter) != 1:
         print("problemo!!")
+        print(first_iter)
     else:
         first_iter = first_iter[0]
         second_iter = generate_iteration(first_iter) # TODO: not always one equation
@@ -98,10 +100,12 @@ def iterate_twice_check_for_non_stabilizing(P):
             if len(third_iter) == 1 and  num_vars(third_iter[0]) != num_vars(first_iter):
                 print("completo")
         else:
+            print(first_iter)
+            print(second_iter)
             print("problemo!!!")
 
 if __name__ == "__main__":
-    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")**p + t* symbols("x_1")
+    P = generate_ppolynomial(POWER, NUM_OF_VAR) + t**2* symbols("x_2")**p+t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
     x, y = symbols("x_0 x_1")
     # P = x+ t*x**p + y**p 
     print(f"starting with {P}")
