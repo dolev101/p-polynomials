@@ -113,3 +113,16 @@ def rename_vars_list_strict(exprs, prefix="x", start=0, gens=None, exclude=None,
     rename_syms = [s for s in gens if s not in exclude and s.name not in exclude_names]
     mapping = {s: Symbol(f"{prefix}_{start+i}") for i, s in enumerate(rename_syms)}
     return [e.xreplace(mapping) for e in exprs], mapping
+from sympy import sympify
+
+def num_vars(poly, exclude=None):
+    """
+    Count distinct SymPy symbols in `poly`.
+    Optionally exclude some symbols by name or Symbol.
+    """
+    expr = sympify(poly)
+    syms = set(expr.free_symbols)
+    if exclude:
+        excl = {getattr(e, "name", e) for e in exclude}  # names or Symbols
+        syms = {s for s in syms if (s not in exclude and s.name not in excl)}
+    return len(syms)

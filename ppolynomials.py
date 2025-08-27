@@ -3,15 +3,15 @@ from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
 from typing import List
-from chatgpt_util import eliminate_single_variable_polys, rename_vars_list_strict
+from chatgpt_util import eliminate_single_variable_polys, rename_vars_list_strict, num_vars
 import math
 # seed(11)
 t = symbols('t')
 
-p = 3
+p = 5
 Fp = GF(p)
 POWER = 1
-NUM_OF_VAR = 2
+NUM_OF_VAR = 4
 
 BASIS_Fpt = [t**i for i in range(p)]
 
@@ -56,6 +56,7 @@ def get_c_ijk(polynomial, i, j, k):
     cij = parts.get(symbols(f"x_{i}") ** (p ** k), 0)
     if collect(cij, t, evaluate=False).get(t ** j, 0) not in [0,1]:
         print("problemo!")
+        print(collect(cij, t, evaluate=False).get(t ** j, 0))
     return collect(cij, t, evaluate=False).get(t ** j, 0) # add root of p^{....}
 
 def create_polynomial(i, N, Ni, l, old_polynomial):
@@ -88,17 +89,21 @@ def iterate_twice_check_for_non_stabilizing(P):
     if len(first_iter) != 1:
         print("problemo!!")
     else:
-        second_iter = generate_iteration(first_iter[0]) # TODO: not always one equation
+        first_iter = first_iter[0]
+        second_iter = generate_iteration(first_iter) # TODO: not always one equation
         if len(second_iter) == 1:
             second_iter = second_iter[0]
             print(f"{first_iter=}")
             print(f"{second_iter=}")
-            print(generate_iteration(second_iter))
+            third_iter = generate_iteration(second_iter) # replace it with dimension formula
+            print(third_iter)
+            if len(third_iter) == 1 and  num_vars(third_iter[0]) != num_vars(first_iter):
+                print("completo")
         else:
             print("problemo!!!")
 
 if __name__ == "__main__":
-    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")
+    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")**p + t* symbols("x_1")
     x, y = symbols("x_0 x_1")
     # P = x+ t*x**p + y**p 
     print(f"starting with {P}")
