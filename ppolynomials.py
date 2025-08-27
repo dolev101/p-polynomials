@@ -3,9 +3,10 @@ from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
 from typing import List
-from chatgpt_util import eliminate_single_variable_polys, rename_vars_list_strict, num_vars
+from chatgpt_util import eliminate_single_variable_polys, rename_vars_list_strict, num_vars, nth_roots_mod_prime
 import math
-# seed(11)
+
+seed(1)
 t = symbols('t')
 
 p = 5
@@ -51,19 +52,16 @@ def generate_iteration(polynomial):
     renamed, _ = rename_vars_list_strict(removed_0, exclude={t})
     return renamed
 
-def get_c_ijk(polynomial, i, j, k):
+def get_c_ijk(polynomial, i, j, k, N, Ni):
     parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
     cij = parts.get(symbols(f"x_{i}") ** (p ** k), 0)
-    if collect(cij, t, evaluate=False).get(t ** j, 0) not in [0,1]:
-        print("problemo!")
-        print(collect(cij, t, evaluate=False).get(t ** j, 0))
-    return collect(cij, t, evaluate=False).get(t ** j, 0) # add root of p^{....}
+    return nth_roots_mod_prime(collect(cij, t, evaluate=False).get(t ** j, 0), p**(k+N-Ni), p)[0]
 
 def create_polynomial(i, N, Ni, l, old_polynomial):
     polynomial = 0*t
     for k in range(Ni + 1):
         for j in range(p**(k+N-Ni)):
-            c_ijk = get_c_ijk(old_polynomial, i, j, k)
+            c_ijk = get_c_ijk(old_polynomial, i, j, k,N,Ni)
             if c_ijk != 0:
                 for r in range(p**N):
                     if (r+j+1-(l+1)*p**k) % (p**(k+N-Ni)) == 0:

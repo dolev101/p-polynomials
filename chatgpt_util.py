@@ -126,3 +126,48 @@ def num_vars(poly, exclude=None):
         excl = {getattr(e, "name", e) for e in exclude}  # names or Symbols
         syms = {s for s in syms if (s not in exclude and s.name not in excl)}
     return len(syms)
+
+from math import gcd
+from sympy import mod_inverse
+from sympy.ntheory.residue_ntheory import primitive_root, discrete_log
+
+def nth_roots_mod_prime(a: int, n: int, p: int):
+    """
+    Solve x^n ≡ a (mod p) for prime p.
+    Returns a sorted list of all solutions in [0, p-1].
+    """
+    if p < 2:
+        raise ValueError("p must be a prime ≥ 2")
+    if n <= 0:
+        raise ValueError("n must be ≥ 1")
+    a %= p
+    if a == 0:
+        return [0]
+
+    order = p - 1
+    g = gcd(n, order)
+    # necessary & sufficient condition for existence (a in subgroup of size (p-1)/g)
+    if pow(a, order // g, p) != 1:
+        return []
+
+    # easy case: n invertible mod (p-1)
+    if g == 1:
+        inv = mod_inverse(n, order)
+        return [pow(a, inv, p)]
+
+    # general case: use discrete log in the cyclic group F_p^*
+    gen = primitive_root(p)                  # generator of F_p^*
+    k = discrete_log(p, a, gen)              # a ≡ gen^k (mod p)
+    if k % g != 0:
+        return []                            # (redundant check; should already hold)
+
+    m = order // g
+    n_prime = n // g
+    inv_nprime = mod_inverse(n_prime, m)     # since gcd(n', m)=1
+    r0 = ((k // g) * inv_nprime) % m         # one solution exponent
+    x0 = pow(gen, r0, p)
+
+    # all g solutions differ by g-th roots of unity
+    zeta = pow(gen, m, p)                    # order g
+    sols = [(x0 * pow(zeta, j, p)) % p for j in range(g)]
+    return sorted(set(sols))
