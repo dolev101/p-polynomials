@@ -6,12 +6,12 @@ from typing import List
 from chatgpt_util import eliminate_single_variable_polys, t_monomial_root_modp, decompose_over_basis, rename_vars_list_strict, num_vars, nth_roots_mod_prime
 import math
 
-seed(16)
+# seed(4)
 t = symbols('t')
 
-p = 3
+p = 5
 Fp = GF(p)
-POWER = 2
+POWER = 1
 NUM_OF_VAR = 3
 
 BASIS_Fpt = [t**i for i in range(p)]
@@ -47,6 +47,7 @@ def generate_iteration(polynomial):
         Ni = int(math.log(int(max_each_index[i]), p))
         for l in range(p**(N-Ni)):
             polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
+    print(polynomial_system)
     eliminated = eliminate_single_variable_polys(polynomial_system, t)[0]
     removed_0 =[x for x in eliminated if x!=0]
     renamed, _ = rename_vars_list_strict(removed_0, exclude={t})
@@ -54,9 +55,10 @@ def generate_iteration(polynomial):
 
 def get_c_ijk(polynomial, i, j, k, N, Ni):
     parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
-    cij = t*0 + parts.get(symbols(f"x_{i}") ** (p ** k), 0)
-
-    return t_monomial_root_modp(decompose_over_basis(cij, t, p**(k+N-Ni))[j], t, p**(k+N-Ni), p)[0]
+    cik = t*0 + parts.get(symbols(f"x_{i}") ** (p ** k), 0)
+    # if i==2:
+    #     print(k, cik, decompose_over_basis(cik, t, p**(k+N-Ni))[j], t_monomial_root_modp(decompose_over_basis(cik, t, p**(k+N-Ni))[j], t, p**(k+N-Ni), p)[0])
+    return t_monomial_root_modp(decompose_over_basis(cik, t, p**(k+N-Ni))[j], t, p**(k+N-Ni), p)[0]
 
 def create_polynomial(i, N, Ni, l, old_polynomial):
     polynomial = 0*t
@@ -65,7 +67,10 @@ def create_polynomial(i, N, Ni, l, old_polynomial):
             c_ijk = get_c_ijk(old_polynomial, i, j, k,N,Ni)
             if c_ijk != 0:
                 for r in range(p**N):
+
                     if (r+j+1-(l+1)*p**k) % (p**(k+N-Ni)) == 0:
+                        # if i ==1:
+                        #     print(i, k, j, r)
                         polynomial += c_ijk*(symbols(f"x_{r}")**(p**(Ni-k)))*t**((r+j+1-(l+1)*p**k)//(p**(k+N-Ni)))
     return polynomial
 
@@ -109,6 +114,9 @@ def iterate_twice_check_for_non_stabilizing(P):
 if __name__ == "__main__":
     P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0") #t**2* symbols("x_2")**p+t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
     x_0, x_1, x_2 = symbols("x_0 x_1 x_2")
-    P = t**16*x_2**9 + t**7*x_1**9 + t*x_0**9 + x_0
+    # P = t**16*x_2**5 + t**6*x_1**5 + x_0**5 + x_0
+    # P = t*x_1**5 + x_0**5 + x_0
+    P = t**9*x_2**5 + t**4*x_1**5 + x_0**5 + x_0
     print(f"starting with {P}")
-    iterate_twice_check_for_non_stabilizing(P)
+    # iterate_twice_check_for_non_stabilizing(P)
+    print(generate_iteration(P))
