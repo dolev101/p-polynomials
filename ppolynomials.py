@@ -6,7 +6,7 @@ from typing import List
 from chatgpt_util import eliminate_single_variable_polys, t_monomial_root_modp, decompose_over_basis, rename_vars_list_strict, num_vars, nth_roots_mod_prime
 import math
 
-# seed(5)
+seed(16)
 t = symbols('t')
 
 p = 3
@@ -96,8 +96,11 @@ def iterate_twice_check_for_non_stabilizing(P):
             second_iter = second_iter[0]
             print(f"{first_iter=}")
             print(f"{second_iter=}")
-            if first_dim != dimension_formula(second_iter):
+            third_dim = dimension_formula(second_iter)
+            if first_dim != third_dim:
                 print("completo")
+                print(generate_iteration(second_iter))
+                print(first_dim, third_dim)
         else:
             print(first_iter)
             print(second_iter)
@@ -105,7 +108,7 @@ def iterate_twice_check_for_non_stabilizing(P):
 
 if __name__ == "__main__":
     P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0") #t**2* symbols("x_2")**p+t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
-    x, y = symbols("x_0 x_1")
-    # P = x+ t*x**p + y**p 
+    x_0, x_1, x_2 = symbols("x_0 x_1 x_2")
+    P = t**16*x_2**9 + t**7*x_1**9 + t*x_0**9 + x_0
     print(f"starting with {P}")
     iterate_twice_check_for_non_stabilizing(P)
