@@ -61,6 +61,9 @@ def get_c_ijk(polynomial, i, j, k, N, Ni):
     return t_monomial_root_modp(decompose_over_basis(cik, t, p**(k+N-Ni))[j], t, p**(k+N-Ni), p)[0]
 
 def create_polynomial(i, N, Ni, l, old_polynomial):
+    """
+    For a specific variable create it's corresponding polynomial
+    """
     polynomial = 0*t
     for k in range(Ni + 1):
         for j in range(p**(k+N-Ni)):
@@ -75,6 +78,9 @@ def create_polynomial(i, N, Ni, l, old_polynomial):
     return polynomial
 
 def dimension_formula(polynomial):
+    """
+    Get dimension of next iteration
+    """
     P = Poly(polynomial, *sorted(polynomial.free_symbols, key=lambda s: s.name))
     max_each_index = tuple(map(max, zip(*P.monoms())))[1:]
     N = int(math.log(int(max(max_each_index)), p))
@@ -88,6 +94,9 @@ def dimension_formula(polynomial):
 
 
 def iterate_twice_check_for_non_stabilizing(P):
+    """
+    Doing the process twice and checking dimension to see if a counterexample was found
+    """
     first_dim = dimension_formula(P)
     first_iter = generate_iteration(P)
     
