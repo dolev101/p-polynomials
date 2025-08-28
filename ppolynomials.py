@@ -3,7 +3,7 @@ from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
 from typing import List
-from chatgpt_util import eliminate_single_variable_polys, decompose_over_basis, rename_vars_list_strict, num_vars, nth_roots_mod_prime
+from chatgpt_util import eliminate_single_variable_polys, t_monomial_root_modp, decompose_over_basis, rename_vars_list_strict, num_vars, nth_roots_mod_prime
 import math
 
 seed(11)
@@ -47,7 +47,7 @@ def generate_iteration(polynomial):
         Ni = int(math.log(int(max_each_index[i]), p))
         for l in range(p**(N-Ni)):
             polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
-    eliminated = eliminate_single_variable_polys(polynomial_system)[0]
+    eliminated = eliminate_single_variable_polys(polynomial_system, t)[0]
     removed_0 =[x for x in eliminated if x!=0]
     renamed, _ = rename_vars_list_strict(removed_0, exclude={t})
     return renamed
@@ -55,7 +55,7 @@ def generate_iteration(polynomial):
 def get_c_ijk(polynomial, i, j, k, N, Ni):
     parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
     cij = t*0 + parts.get(symbols(f"x_{i}") ** (p ** k), 0)
-    return decompose_over_basis(cij, t, p)[j]
+    return t_monomial_root_modp(decompose_over_basis(cij, t, p)[j], t, p**(k+N-Ni), p)[0]
 
 def create_polynomial(i, N, Ni, l, old_polynomial):
     polynomial = 0*t

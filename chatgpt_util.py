@@ -1,29 +1,30 @@
 from sympy import sympify, Poly
 
-def eliminate_single_variable_polys(polys):
+from sympy import sympify, Poly, S
+
+def eliminate_single_variable_polys(polys, t):
     """
-    Given a list of polynomials (SymPy expr or Poly), repeatedly:
-      1) find any polynomial that is a single-variable monomial c*X_j^m
-         (no other variables multiply it),
-      2) remove it from the list,
-      3) set that variable to 0 in all remaining polynomials (thus removing
-         all monomials containing that variable).
+    Given a list of polynomials (SymPy expr/Poly), repeatedly:
+      1) find any polynomial that is a *single monomial* using only {x_i, t}
+         with a positive power of some x_i (not t-only),
+      2) remove that polynomial from the list,
+      3) remove every monomial containing that x_i from all remaining polynomials
+         (equivalently, substitute x_i -> 0).
+
+    Parameters
+    ----------
+    polys : list[Expr|Poly]
+    t     : Symbol   # the distinguished variable allowed to appear together with x_i
 
     Returns
     -------
-    new_polys : list[sympy.Expr]
-        The updated list after eliminations.
-    eliminated_vars : list[sympy.Symbol]
-        Variables that were eliminated (sorted by name).
+    new_polys : list[Expr]
+    eliminated_vars : list[Symbol]   # the x_i’s that were eliminated (sorted by name)
     """
-
     # normalize to expressions
     exprs = []
     for p in polys:
-        if hasattr(p, "as_expr"):
-            exprs.append(p.as_expr())
-        else:
-            exprs.append(sympify(p))
+        exprs.append(p.as_expr() if hasattr(p, "as_expr") else sympify(p))
 
     eliminated = set()
 
@@ -32,39 +33,42 @@ def eliminate_single_variable_polys(polys):
         to_drop_indices = set()
 
         for idx, e in enumerate(exprs):
-            e = e.expand()
+            e = sympify(e).expand()
             if e == 0:
-                continue  # nothing to do
+                continue
 
             vars_list = sorted(e.free_symbols, key=lambda s: s.name)
             if not vars_list:
-                continue  # constant, ignore
+                continue  # constant
 
-            # multivariate structure: check if exactly one monomial overall,
-            # and that monomial involves exactly one variable with positive exponent
-            Pf = Poly(e, *vars_list)
-            monoms = Pf.monoms()
-            if len(monoms) != 1:
+            # Represent as Poly over *all* symbols so any symbol in coefficients is detected
+            P = Poly(e, *vars_list, domain='EX')
+            if P.is_zero:
                 continue
 
-            mono = monoms[0]  # tuple of exponents aligned with vars_list
-            # count how many variables have positive exponent
-            support = [i for i, exp in enumerate(mono) if exp > 0]
-            if len(support) == 1:
-                # it's c * X_j^m, with only one variable present
-                j = support[0]
-                v = vars_list[j]
+            monoms = P.monoms()
+            if len(monoms) != 1:
+                continue  # not a single monomial
+
+            exps = monoms[0]
+            support_idx = [i for i, exp in enumerate(exps) if exp > 0]
+            support_syms = {vars_list[i] for i in support_idx}
+
+            # must be subset of {x_i, t} and must include exactly one non-t variable
+            non_t_syms = {s for s in support_syms if s != t}
+            if len(non_t_syms) == 1 and support_syms.issubset(non_t_syms | {t}):
+                v = next(iter(non_t_syms))  # the x_i to eliminate
                 to_eliminate_vars.add(v)
                 to_drop_indices.add(idx)
 
         if not to_eliminate_vars:
             break
 
-        # remove those single-variable polynomials
+        # drop the eliminable monomial-polynomials
         exprs = [e for i, e in enumerate(exprs) if i not in to_drop_indices]
 
-        # remove all monomials containing any eliminated variable (subs var->0)
-        subs_map = {v: 0 for v in to_eliminate_vars}
+        # remove all monomials containing any eliminated x_i: substitute x_i -> 0
+        subs_map = {v: S.Zero for v in to_eliminate_vars}
         exprs = [e.subs(subs_map).expand() for e in exprs]
 
         eliminated |= to_eliminate_vars
@@ -234,3 +238,81 @@ def decompose_over_basis(expr, t, p, return_coeffs_in='t'):
         return g
     else:
         raise ValueError("return_coeffs_in must be 't' or 's'")
+from sympy import Poly, sympify, S, Rational
+from sympy.polys.polyerrors import PolynomialError
+
+def t_monomial_root_modp(expr, t, n, p, allow_fractional=False):
+    """
+    If expr is a single monomial in t, c*t**k (with c independent of t),
+    return all n-th roots over the form r * t**(k/n), where:
+      - r runs over the n-th roots of c modulo prime p, computed by
+        `nth_roots_mod_prime(c_mod, n, p)` (assumed available in scope),
+      - the t-exponent is divided by n. If k % n != 0 and allow_fractional=False,
+        raise ValueError; otherwise use Rational(k, n).
+
+    Returns
+    -------
+    list[sympy.Expr]
+        A list of expressions (possibly empty if no coefficient root exists).
+
+    Notes
+    -----
+    - Coefficient c must be an integer modulo p. If not, ValueError is raised.
+    - If expr == 0, returns [0].
+    - If c == 0, the only n-th root mod p is 0; returns [0] (since 0 * t**anything == 0).
+    """
+    expr = sympify(expr)
+
+    if n <= 0:
+        raise ValueError("n must be a positive integer")
+    if expr.is_zero:
+        return [S.Zero]
+
+    # Treat as polynomial in t; coefficients may involve other symbols (domain='EX')
+    try:
+        P = Poly(expr, t, domain='EX')
+    except PolynomialError as e:
+        raise ValueError("Expression is not a polynomial in t") from e
+
+    monoms = P.monoms()
+    coeffs = P.coeffs()
+
+    if len(monoms) != 1:
+        raise ValueError("Expression is not a single monomial in t")
+
+    k = monoms[0][0]   # exponent of t
+    c = coeffs[0]      # coefficient (must be independent of t)
+
+    # Determine t-exponent root
+    if k % n == 0:
+        new_exp = k // n
+    else:
+        if not allow_fractional:
+            raise ValueError(f"t-exponent {k} not divisible by n={n}")
+        new_exp = Rational(k, n)
+
+    # Coefficient must be an integer modulo p
+    if not c.is_Integer:
+        # Allow exact rationals that reduce mod p (denominator invertible mod p)
+        if c.is_Rational:
+            num = int(c.p)  # numerator
+            den = int(c.q)  # denominator
+            if den % p == 0:
+                raise ValueError("Coefficient denominator not invertible modulo p")
+            # Reduce num/den mod p
+            c_mod = (num % p) * pow(den % p, -1, p) % p
+        else:
+            raise ValueError("Coefficient must be an integer (or rational) for mod-p n-th roots")
+    else:
+        c_mod = c % p
+
+    # Handle c == 0 separately: the only n-th root mod p is 0
+    if c_mod == 0:
+        return [S.Zero]
+
+    # Compute all n-th roots of the coefficient modulo p (assumes function exists)
+    roots_mod_p = nth_roots_mod_prime(c_mod, n, p)  # -> iterable of ints in [0, p-1]
+
+    # Build expressions
+    results = [S(int(r)) * (t ** new_exp) for r in roots_mod_p]
+    return results
