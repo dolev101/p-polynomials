@@ -9,7 +9,7 @@ import math
 # seed(4)
 t = symbols('t')
 
-p = 5
+p = 3
 Fp = GF(p)
 POWER = 1
 NUM_OF_VAR = 3
@@ -121,11 +121,13 @@ def iterate_twice_check_for_non_stabilizing(P):
             print("problemo!!!")
 
 if __name__ == "__main__":
+    # seed(4) # choosing a specific random seed
     P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0") #t**2* symbols("x_2")**p+t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
     x_0, x_1, x_2 = symbols("x_0 x_1 x_2")
     # P = t**16*x_2**5 + t**6*x_1**5 + x_0**5 + x_0
     # P = t*x_1**5 + x_0**5 + x_0
-    P = t**9*x_2**5 + t**4*x_1**5 + x_0**5 + x_0
+    P = t**4*x_2**p + t*x_1**p + x_0**p + x_0 # BUG :()
+    # P = t**4*x_1**p**2 + t*x_0**p + x_0
     print(f"starting with {P}")
     # iterate_twice_check_for_non_stabilizing(P)
     print(generate_iteration(P))
