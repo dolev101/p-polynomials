@@ -6,13 +6,13 @@ from typing import List
 from chatgpt_util import eliminate_single_variable_polys, t_monomial_root_modp, decompose_over_basis, rename_vars_list_strict, num_vars, nth_roots_mod_prime
 import math
 
-seed(11)
+# seed(5)
 t = symbols('t')
 
 p = 3
 Fp = GF(p)
-POWER = 1
-NUM_OF_VAR = 2
+POWER = 2
+NUM_OF_VAR = 3
 
 BASIS_Fpt = [t**i for i in range(p)]
 
@@ -55,7 +55,8 @@ def generate_iteration(polynomial):
 def get_c_ijk(polynomial, i, j, k, N, Ni):
     parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
     cij = t*0 + parts.get(symbols(f"x_{i}") ** (p ** k), 0)
-    return t_monomial_root_modp(decompose_over_basis(cij, t, p)[j], t, p**(k+N-Ni), p)[0]
+
+    return t_monomial_root_modp(decompose_over_basis(cij, t, p**(k+N-Ni))[j], t, p**(k+N-Ni), p)[0]
 
 def create_polynomial(i, N, Ni, l, old_polynomial):
     polynomial = 0*t
@@ -95,9 +96,7 @@ def iterate_twice_check_for_non_stabilizing(P):
             second_iter = second_iter[0]
             print(f"{first_iter=}")
             print(f"{second_iter=}")
-            third_iter = generate_iteration(second_iter) # replace it with dimension formula
-            print(third_iter)
-            if len(third_iter) == 1 and  num_vars(third_iter[0]) != num_vars(first_iter):
+            if first_dim != dimension_formula(second_iter):
                 print("completo")
         else:
             print(first_iter)
