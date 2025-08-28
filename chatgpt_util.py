@@ -171,3 +171,66 @@ def nth_roots_mod_prime(a: int, n: int, p: int):
     zeta = pow(gen, m, p)                    # order g
     sols = [(x0 * pow(zeta, j, p)) % p for j in range(g)]
     return sorted(set(sols))
+
+from sympy import symbols, Symbol, Poly, Matrix, fraction, together, S, sympify
+
+def _group_by_mod_p(poly_in_t, t, p, s):
+    # Poly over EX so coefficients may depend on other symbols
+    P = Poly(poly_in_t, t, domain='EX')
+    coeffs = [S.Zero]*p
+    for k, c in P.as_dict().items():
+        k = k[0]
+        i = k % p
+        m = k // p
+        coeffs[i] += c * (s**m)
+    return coeffs
+
+def _mul_mod_tp(a, b, p, s):
+    out = [S.Zero]*p
+    for i in range(p):
+        ai = a[i]
+        if ai == 0:
+            continue
+        for j in range(p):
+            bj = b[j]
+            if bj == 0:
+                continue
+            r = (i + j) % p
+            m = (i + j) // p
+            out[r] += ai * bj * (s**m)
+    return out
+
+def decompose_over_basis(expr, t, p, return_coeffs_in='t'):
+    """
+    Return [g_0, ..., g_{p-1}] with expr = sum g_i(t^p) * t**i.
+    """
+    s = Symbol('_s')  # stands for t**p inside coefficients
+
+    expr = together(expr)
+    num, den = fraction(expr)
+
+    a = _group_by_mod_p(num, t, p, s)   # numerator grouped by i mod p
+    q = _group_by_mod_p(den, t, p, s)   # denominator grouped by i mod p
+
+    # Build linear system for u with (∑ q_i t^i)(∑ u_i t^i) = 1 modulo t^p = s
+    M = [[S.Zero]*p for _ in range(p)]
+    for r in range(p):
+        for j in range(p):
+            acc = S.Zero
+            for i in range(p):
+                if (i + j) % p == r:
+                    acc += q[i]*(s**((i + j)//p))
+            M[r][j] = acc
+    M = Matrix(M)
+    e0 = Matrix([1] + [0]*(p-1))
+
+    u = list(M.LUsolve(e0))            # u_i(s)
+    g = _mul_mod_tp(a, u, p, s)        # g_i(s)
+
+    if return_coeffs_in == 't':
+        # ensure SymPy objects, then substitute s -> t**p
+        return [sympify(gi).xreplace({s: t**p}) for gi in g]
+    elif return_coeffs_in == 's':
+        return g
+    else:
+        raise ValueError("return_coeffs_in must be 't' or 's'")

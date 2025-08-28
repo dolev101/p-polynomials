@@ -1,18 +1,18 @@
-from sympy import poly, symbols, Poly, collect
+from sympy import poly, symbols, Poly, collect, Expr
 from sympy.polys.domains import GF
 import itertools
 from random import seed, sample
 from typing import List
-from chatgpt_util import eliminate_single_variable_polys, rename_vars_list_strict, num_vars, nth_roots_mod_prime
+from chatgpt_util import eliminate_single_variable_polys, decompose_over_basis, rename_vars_list_strict, num_vars, nth_roots_mod_prime
 import math
 
-# seed(1)
+seed(11)
 t = symbols('t')
 
 p = 3
 Fp = GF(p)
-POWER = 2
-NUM_OF_VAR = 3
+POWER = 1
+NUM_OF_VAR = 2
 
 BASIS_Fpt = [t**i for i in range(p)]
 
@@ -54,8 +54,8 @@ def generate_iteration(polynomial):
 
 def get_c_ijk(polynomial, i, j, k, N, Ni):
     parts = collect(polynomial, symbols(f"x_{i}"), evaluate=False)
-    cij = parts.get(symbols(f"x_{i}") ** (p ** k), 0)
-    return nth_roots_mod_prime(collect(cij, t, evaluate=False).get(t ** j, 0), p**(k+N-Ni), p)[0]
+    cij = t*0 + parts.get(symbols(f"x_{i}") ** (p ** k), 0)
+    return decompose_over_basis(cij, t, p)[j]
 
 def create_polynomial(i, N, Ni, l, old_polynomial):
     polynomial = 0*t
@@ -105,7 +105,7 @@ def iterate_twice_check_for_non_stabilizing(P):
             print("problemo!!!")
 
 if __name__ == "__main__":
-    P = generate_ppolynomial(POWER, NUM_OF_VAR) + t**2* symbols("x_2")**p+t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
+    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0") #t**2* symbols("x_2")**p+t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
     x, y = symbols("x_0 x_1")
     # P = x+ t*x**p + y**p 
     print(f"starting with {P}")
