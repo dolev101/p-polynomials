@@ -99,7 +99,7 @@ def iterate_twice_check_for_non_stabilizing(P):
     first_iter = generate_iteration(P)
     
     if len(first_iter) != 1:
-        print("problemo: more then one equation in first iteration output")
+        print("problemo: no equation in first iteration output")
         print(first_iter)
     else:
         first_iter = first_iter[0]
@@ -117,16 +117,18 @@ def iterate_twice_check_for_non_stabilizing(P):
         else:
             print(first_iter)
             print(second_iter)
-            print("problemo: more then one equation in second iteration output")
+            print("problemo: no one equation in second iteration output")
 
 if __name__ == "__main__":
     # seed(4) # choosing a specific random seed
-    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0") + t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
-    x_0, x_1, x_2 = symbols("x_0 x_1 x_2")
+    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")**p #+ symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
+    x_0, x_1, x_2, x_3, x_4, x_5, x_6 = symbols("x_0 x_1 x_2 x_3 x_4 x_5 x_6") # For tests
+    # TODO: find a way to write better
     # P = t**16*x_2**5 + t**6*x_1**5 + x_0**5 + x_0
     # P = t*x_1**5 + x_0**5 + x_0
     # P = t**4*x_2**p + t*x_1**p + x_0**p + x_0 # BUG :() this is non reduced!!!
     # P = t**4*x_1**p**2 + t*x_0**p + x_0
+    # P= t**8*x_6**9 + t**7*x_0**9 + t**6*x_5**9 + t**5*x_4**9 + t**4*x_3**9 + t**2*x_2**9 + x_0 + x_1**9
     print(f"starting with {P}")
     iterate_twice_check_for_non_stabilizing(P)
     # print(generate_iteration(P))
