@@ -126,8 +126,8 @@ if __name__ == "__main__":
     x_0, x_1, x_2 = symbols("x_0 x_1 x_2")
     # P = t**16*x_2**5 + t**6*x_1**5 + x_0**5 + x_0
     # P = t*x_1**5 + x_0**5 + x_0
-    P = t**4*x_2**p + t*x_1**p + x_0**p + x_0 # BUG :()
+    # P = t**4*x_2**p + t*x_1**p + x_0**p + x_0 # BUG :() this is non reduced!!!
     # P = t**4*x_1**p**2 + t*x_0**p + x_0
     print(f"starting with {P}")
-    # iterate_twice_check_for_non_stabilizing(P)
-    print(generate_iteration(P))
+    iterate_twice_check_for_non_stabilizing(P)
+    # print(generate_iteration(P))
