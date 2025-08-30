@@ -99,7 +99,7 @@ def iterate_twice_check_for_non_stabilizing(P):
     first_iter = generate_iteration(P)
     
     if len(first_iter) != 1:
-        print("problemo!!")
+        print("problemo: more then one equation in first iteration output")
         print(first_iter)
     else:
         first_iter = first_iter[0]
@@ -117,11 +117,11 @@ def iterate_twice_check_for_non_stabilizing(P):
         else:
             print(first_iter)
             print(second_iter)
-            print("problemo!!!")
+            print("problemo: more then one equation in second iteration output")
 
 if __name__ == "__main__":
     # seed(4) # choosing a specific random seed
-    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0") #t**2* symbols("x_2")**p+t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
+    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0") + t* symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
     x_0, x_1, x_2 = symbols("x_0 x_1 x_2")
     # P = t**16*x_2**5 + t**6*x_1**5 + x_0**5 + x_0
     # P = t*x_1**5 + x_0**5 + x_0
