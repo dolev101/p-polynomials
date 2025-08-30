@@ -46,7 +46,6 @@ def generate_iteration(polynomial):
         Ni = int(math.log(int(max_each_index[i]), p))
         for l in range(p**(N-Ni)):
             polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
-    print(polynomial_system)
     eliminated = eliminate_single_variable_polys(polynomial_system, t)[0]
     removed_0 =[x for x in eliminated if x!=0]
     renamed, _ = rename_vars_list_strict(removed_0, exclude={t})
@@ -110,10 +109,11 @@ def iterate_twice_check_for_non_stabilizing(P):
             print(f"{first_iter=}")
             print(f"{second_iter=}")
             third_dim = dimension_formula(second_iter)
+            print("first, third dimensions: ", first_dim, third_dim)
             if first_dim != third_dim:
                 print("completo")
                 print(generate_iteration(second_iter))
-                print(first_dim, third_dim)
+                
         else:
             print(first_iter)
             print(second_iter)
