@@ -21,16 +21,16 @@ def f7(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
-def get_random_A_subset(basis: List, n, len):
-    Bn = f7((b**e for b, e in itertools.product(basis, range(p**n))))
-    return list(sample(list(Bn),k=len)
+def get_random_A_subset(n, len):
+    Bn = [t**i for i in range(p**n)]
+    return list(sample(Bn,k=len)
 )
 
 def generate_ppolynomial(n, len):
     """
     generate basic reduced ppolynomial, notice that there isn't linear part for smoothness 
     """
-    A = get_random_A_subset(BASIS_Fpt, n, len)
+    A = get_random_A_subset(n, len)
     A = sorted(A, key=lambda p: Poly(p, t).degree())
 
     return sum([a*symbols(f"x_{i}")**(p**n) for i, a in enumerate(A)])
