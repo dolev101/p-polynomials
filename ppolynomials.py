@@ -11,8 +11,8 @@ t = symbols('t')
 
 p = 3
 Fp = GF(p)
-POWER = 1
-NUM_OF_VAR = 3
+POWER = 2
+NUM_OF_VAR = 4
 
 BASIS_Fpt = [t**i for i in range(p)]
 
@@ -23,8 +23,7 @@ def f7(seq):
 
 def get_random_A_subset(n, len):
     Bn = [t**i for i in range(p**n)]
-    return list(sample(Bn,k=len)
-)
+    return list(sample(Bn,k=len))
 
 def generate_ppolynomial(n, len):
     """
