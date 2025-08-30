@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # P = t**4*x_2**p + t*x_1**p + x_0**p + x_0 # BUG :() this is non reduced!!!
     # P = t**4*x_1**p**2 + t*x_0**p + x_0
     # P= t**8*x_6**9 + t**7*x_0**9 + t**6*x_5**9 + t**5*x_4**9 + t**4*x_3**9 + t**2*x_2**9 + x_0 + x_1**9
-    P = t**7*x_3**9 + t**4*x_2**9 + t**3*x_1**9 + x_0**9 + x_0**3
+    P = t**7*x_3**9 + t**4*x_2**9 + t**3*x_1**9 + x_0**9 + x_0**3 # problem with this
     print(f"starting with {P}")
     iterate_twice_check_for_non_stabilizing(P)
     # print(generate_iteration(P))
