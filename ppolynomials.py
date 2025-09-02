@@ -12,7 +12,7 @@ t = symbols('t')
 p = 3
 Fp = GF(p)
 POWER = 2
-NUM_OF_VAR = 4
+NUM_OF_VAR = 2
 
 BASIS_Fpt = [t**i for i in range(p)]
 
@@ -23,6 +23,7 @@ def f7(seq):
 
 def get_random_A_subset(n, len):
     Bn = [t**i for i in range(p**n)]
+
     return list(sample(Bn,k=len))
 
 def generate_ppolynomial(n, len):
@@ -46,6 +47,7 @@ def generate_iteration(polynomial):
         Ni = int(math.log(int(max_each_index[i]), p))
         for l in range(p**(N-Ni)):
             polynomial_system.append(create_polynomial(i, N, Ni, l, polynomial))
+    print(polynomial_system)
     eliminated = eliminate_single_variable_polys(polynomial_system, t)[0]
     removed_0 =[x for x in eliminated if x!=0]
     renamed, _ = rename_vars_list_strict(removed_0, exclude={t})
@@ -121,7 +123,7 @@ def iterate_twice_check_for_non_stabilizing(P):
 
 if __name__ == "__main__":
     # seed(4) # choosing a specific random seed
-    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")**p #+ symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
+    P = generate_ppolynomial(POWER, NUM_OF_VAR) + symbols("x_0")**p + symbols("x_0")#+ t*symbols("x_1")#+ symbols("x_0")#**p + t* symbols("x_1")
     x_0, x_1, x_2, x_3, x_4, x_5, x_6 = symbols("x_0 x_1 x_2 x_3 x_4 x_5 x_6") # For tests
     # TODO: find a way to write better
     # P = t**16*x_2**5 + t**6*x_1**5 + x_0**5 + x_0
@@ -129,7 +131,9 @@ if __name__ == "__main__":
     # P = t**4*x_2**p + t*x_1**p + x_0**p + x_0 # BUG :() this is non reduced!!!
     # P = t**4*x_1**p**2 + t*x_0**p + x_0
     # P= t**8*x_6**9 + t**7*x_0**9 + t**6*x_5**9 + t**5*x_4**9 + t**4*x_3**9 + t**2*x_2**9 + x_0 + x_1**9
-    P = t**7*x_3**9 + t**4*x_2**9 + t**3*x_1**9 + x_0**9 + x_0**3 # problem with this
+    # P = t**7*x_3**9 + t**4*x_2**3 + t**3*x_1**9 + x_0 # problem with this
+    # P = t**2*x_3**3 + t*x_2**3 + x_0 + x_1**3
+    P = x_1**9 + t*x_0**9 + x_0**3 + x_0
     print(f"starting with {P}")
     iterate_twice_check_for_non_stabilizing(P)
     # print(generate_iteration(P))
